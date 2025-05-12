@@ -34,12 +34,9 @@ Pour configurer rapidement un hub et un projet, des instructions simples pour ut
     1. Entrez un **Nom de projet**.
     1. Lorsque vous y êtes invité, **créez un hub**.
     1. Personnalisez le hub :
-
         1. Sélectionnez un **abonnement**, un **groupe de ressources**, un **emplacement**, etc.
         1. Connectez une **nouvelle ressource Azure AI Services** (ignorez la recherche IA).
-
     1. Passez en revue les informations, puis sélectionnez **Créer**.
-
 1. **Attendez la fin du déploiement** (environ 1 ou 2 minutes).
 
 ### B. Déployer un modèle
