@@ -1,9 +1,9 @@
 ---
 lab:
-  title: Surveillez votre application d'IA générative
+  title: Analyser et déboguer votre application d’IA générative avec le traçage
 ---
 
-# Surveillez votre application d'IA générative
+# Analyser et déboguer votre application d’IA générative avec le traçage
 
 Cet exercice prend environ **30** minutes.
 
@@ -11,27 +11,29 @@ Cet exercice prend environ **30** minutes.
 
 ## Introduction
 
-Dans cet exercice, vous allez activer la surveillance d’une application de complétion de conversation et afficher ses performances dans Azure Monitor. Vous interagissez avec votre modèle déployé pour générer des données, afficher les données générées via le tableau de bord Insights pour les applications d’IA génératives et configurer des alertes pour vous aider à optimiser le déploiement du modèle.
+Dans cet exercice, vous allez exécuter un assistant d’IA générative à plusieurs étapes qui recommande des randonnées et suggère des équipements de plein air. Vous allez utiliser les fonctionnalités de traçage du Kit de développement logiciel (SDK) Azure AI Inference pour analyser la façon dont votre application s’exécute et identifier les points de décision clés pris par le modèle et la logique environnante.
 
-## 1. Configurer l’environnement
+Vous allez interagir avec un modèle déployé pour simuler un parcours utilisateur réel, tracer chaque étape de l’application (de l’entrée utilisateur à la réponse du modèle et au post-traitement) et afficher les données de trace dans Azure AI Foundry. Cela vous aidera à comprendre comment le traçage améliore l’observabilité, simplifie le débogage et prend en charge l’optimisation des performances des applications d’IA génératives.
+
+## Configurer l’environnement
 
 Pour effectuer les tâches de cet exercice, vous avez besoin des éléments suivants :
 
-- Un hub Azure AI Foundry
+- Hub Azure AI Foundry
 - Un projet Azure AI Foundry
 - Un modèle déployé (comme GPT-4o)
 - Une ressource Application Insights connectée
 
-### R : Créer un projet et un hub AI Foundry
+### Créer un projet et un hub AI Foundry
 
-Pour configurer rapidement un hub et un projet, des instructions simples pour utiliser l’interface utilisateur du portail Azure AI Foundry sont fournies ci-dessous.
+Pour configurer rapidement un hub et un projet, des instructions simples pour utiliser l’IU du portail Azure AI Foundry sont fournies ci-dessous.
 
 1. Accédez au portail Azure AI Foundry : ouvrez [https://ai.azure.com](https://ai.azure.com).
 1. Connectez-vous à l'aide de vos informations d'identification Azure.
 1. Créez un projet :
     1. Accédez à **Tous les hubs + projets**.
     1. Sélectionnez **+ Nouveau projet**.
-    1. Entrez un **Nom de projet**.
+    1. Entrez un **nom de projet**.
     1. Lorsque vous y êtes invité, **créez un hub**.
     1. Personnalisez le hub :
         1. Sélectionnez un **abonnement**, un **groupe de ressources**, un **emplacement**, etc.
@@ -39,7 +41,7 @@ Pour configurer rapidement un hub et un projet, des instructions simples pour ut
     1. Passez en revue les informations, puis sélectionnez **Créer**.
 1. **Attendez la fin du déploiement** (environ 1 ou 2 minutes).
 
-### B. Déployer un modèle
+### Déployer un modèle
 
 Pour générer des données que vous pouvez surveiller, vous devez d’abord déployer un modèle et interagir avec celui-ci. Dans les instructions, vous êtes invité à déployer un modèle GPT-4o, mais **vous pouvez utiliser n’importe quel modèle** à partir de la collection Azure OpenAI Service disponible.
 
@@ -50,24 +52,24 @@ Pour générer des données que vous pouvez surveiller, vous devez d’abord dé
 
 Le hub et le projet sont prêts, avec toutes les ressources Azure requises provisionnées automatiquement.
 
-### C. Se connecter à Application Insights
+### Se connecter à Application Insights
 
-Connectez Application Insights à votre projet dans Azure AI Foundry pour commencer à collecter des données pour la surveillance.
+Connectez Application Insights à votre projet dans Azure AI Foundry pour commencer à collecter des données à des fins d’analyse.
 
 1. Ouvrez votre projet dans le portail Azure AI Foundry.
 1. Utilisez le menu de gauche, puis sélectionnez la page **Suivi**.
-1. **Créez** une ressource Application Insights pour vous connecter à votre application.
-1. Entrez un **nom pour la ressource Application Insights**.
+1. **Créez une** ressource Application Insights pour vous connecter à votre application.
+1. Entrez le **nom d’une ressource Application Insights**.
 
 Application Insights est désormais connecté à votre projet et les données commencent à être collectées pour l’analyse.
 
-## 2. Interagir avec un modèle déployé
+## Exécuter une application d’IA générative avec Cloud Shell
 
-Vous allez interagir avec votre modèle déployé par programmation en configurant une connexion à votre projet Azure AI Foundry à l’aide d’Azure Cloud Shell. Cela vous permet d’envoyer une invite au modèle et de générer des données de surveillance.
+Vous allez vous connecter à votre projet Azure AI Foundry à partir d’Azure Cloud Shell et interagir par programmation avec un modèle déployé dans le cadre d’une application d’IA générative.
 
-### R : Se connecter à un modèle via Cloud Shell
+### Interagir avec un modèle déployé
 
-Commencez par récupérer les informations nécessaires pour être authentifié afin d’interagir avec votre modèle. Ensuite, accédez à Azure Cloud Shell et mettez à jour la configuration pour envoyer les invites fournies à votre propre modèle déployé.
+Commencez par récupérer les informations nécessaires pour être authentifié afin d’interagir avec votre modèle déployé. Ensuite, accédez à Azure Cloud Shell et mettez à jour le code de votre application d’IA générative.
 
 1. Dans le portail Azure AI Foundry, affichez la page **Vue d’ensemble** de votre projet.
 1. Dans la zone **Détails du projet**, notez la **chaîne de connexion du projet**.
@@ -77,12 +79,12 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 1. Utilisez le bouton **[\>_]** à droite de la barre de recherche, en haut de la page, pour créer un environnement Cloud Shell dans le portail Azure, puis sélectionnez un environnement ***PowerShell*** avec aucun stockage dans votre abonnement.
 1. Dans la barre d’outils Cloud Shell, dans le menu **Paramètres**, sélectionnez **Accéder à la version classique**.
 
-    **<font color="red">Assurez-vous d’avoir basculé vers la version classique de Cloud Shell avant de continuer.</font>**
+    **<font color="red">Assurez-vous d’avoir basculé vers la version classique du Cloud Shell avant de continuer.</font>**
 
 1. Dans le volet Cloud Shell, entrez et exécutez les commandes suivantes :
 
     ```
-    rm -r mslearn-ai-foundry -f
+    rm -r mslearn-genaiops -f
     git clone https://github.com/microsoftlearning/mslearn-genaiops mslearn-genaiops
     ```
 
@@ -91,7 +93,7 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 1. Une fois le référentiel cloné, accédez au dossier contenant les fichiers de code de l’application :  
 
     ```
-   cd mslearn-ai-foundry/Files/07
+   cd mslearn-genaiops/Files/08
     ```
 
 1. Dans le volet de ligne de commande Cloud Shell, saisissez la commande suivante pour installer les bibliothèques dont vous avez besoin :
@@ -117,133 +119,258 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 
 1. *Une fois* que vous avez remplacé les espaces réservés, dans l’éditeur de code, utilisez la commande **Ctrl+S** ou **Clic droit > Enregistrer** pour **enregistrer vos modifications**.
 
-### B. Envoyer des invites à votre modèle déployé
+### Mettre à jour le code de votre application d’IA générative
 
-Vous allez maintenant exécuter plusieurs scripts qui envoient différentes invites à votre modèle déployé. Ces interactions génèrent des données que vous pouvez observer ultérieurement dans Azure Monitor.
+Maintenant que votre environnement est configuré et que votre fichier .env est configuré, il est temps de préparer votre script d’assistant IA pour l’exécution. Outre la connexion à un projet IA et l’activation d’Application Insights, vous devez :
 
-1. Exécutez la commande suivante pour **afficher le premier script** fourni :
+- Interagir avec votre modèle déployé
+- Définir la fonction pour spécifier votre invite
+- Définir le flux principal qui appelle toutes les fonctions
+
+Vous allez ajouter ces trois parties à un script de départ.
+
+1. Exécutez la commande suivante pour **ouvrir le script** fourni :
 
     ```
    code start-prompt.py
     ```
 
+    Vous verrez que plusieurs lignes clés ont été laissées vides ou marquées avec des commentaires # vides. Votre tâche consiste à terminer le script en copiant et en collant les lignes appropriées ci-dessous dans les emplacements appropriés.
+
+1. Dans le script, recherchez **# Function to call the model and handle tracing**.
+1. Sous ce commentaire, collez le code suivant :
+
+    ```
+   def call_model(system_prompt, user_prompt, span_name):
+        with tracer.start_as_current_span(span_name) as span:
+            span.set_attribute("session.id", SESSION_ID)
+            span.set_attribute("prompt.user", user_prompt)
+            start_time = time.time()
+    
+            response = chat_client.complete(
+                model=model_name,
+                messages=[SystemMessage(system_prompt), UserMessage(user_prompt)]
+            )
+    
+            duration = time.time() - start_time
+            output = response.choices[0].message.content
+            span.set_attribute("response.time", duration)
+            span.set_attribute("response.tokens", len(output.split()))
+            return output
+    ```
+
+1. Dans le script, recherchez **# Function to recommend a hike based on user preferences**.
+1. Sous ce commentaire, collez le code suivant :
+
+    ```
+   def recommend_hike(preferences):
+        with tracer.start_as_current_span("recommend_hike") as span:
+            prompt = f"""
+            Recommend a named hiking trail based on the following user preferences.
+            Provide only the name of the trail and a one-sentence summary.
+            Preferences: {preferences}
+            """
+            response = call_model(
+                "You are an expert hiking trail recommender.",
+                prompt,
+                "recommend_model_call"
+            )
+            span.set_attribute("hike_recommendation", response.strip())
+            return response.strip()
+    ```
+
+1. Dans le script, recherchez **# ---- Main Flow ----**.
+1. Sous ce commentaire, collez le code suivant :
+
+    ```
+   if __name__ == "__main__":
+       with tracer.start_as_current_span("trail_guide_session") as session_span:
+           session_span.set_attribute("session.id", SESSION_ID)
+           print("\n--- Trail Guide AI Assistant ---")
+           preferences = input("Tell me what kind of hike you're looking for (location, difficulty, scenery):\n> ")
+
+           hike = recommend_hike(preferences)
+           print(f"\n✅ Recommended Hike: {hike}")
+
+           # Run profile function
+
+
+           # Run match product function
+
+
+           print(f"\n🔍 Trace ID available in Application Insights for session: {SESSION_ID}")
+    ```
+
+1. **Enregistrez les modifications** que vous avez apportées au script.
 1. Dans le volet de ligne de commande Cloud Shell, sous l’éditeur de code, entrez la commande suivante pour **exécuter le script** :
 
     ```
    python start-prompt.py
     ```
 
-    Le modèle génèrera une réponse, qui sera capturée avec Application Insights pour une analyse plus approfondie. Nous allons varier nos invites pour explorer leurs effets.
-
-1. **Ouvrez et passez en revue le script**, où l’invite demande au modèle de **répondre uniquement avec une seule phrase et une liste** :
+1. Donnez une description du type de randonnée que vous recherchez, par exemple :
 
     ```
-   code short-prompt.py
+   A one-day hike in the mountains
     ```
 
-1. Dans la ligne de commande, **exécutez le script** en entrant la commande suivante :
-
-    ```
-   python short-prompt.py
-    ```
-
-1. Le script suivant a un objectif similaire, mais inclut les instructions pour la sortie dans le **message système** au lieu du message utilisateur :
-
-    ```
-   code system-prompt.py
-    ```
-
-1. Dans la ligne de commande, **exécutez le script** en entrant la commande suivante :
-
-    ```
-   python system-prompt.py
-    ```
-
-1. Enfin, essayons de déclencher une erreur en exécutant une invite avec **trop de jetons** :
-
-    ```
-   code error-prompt.py
-    ```
-
-1. Dans la ligne de commande, **exécutez le script** en entrant la commande suivante : Notez qu’il est très **vraisemblable qu’une erreur se produise**.
-
-    ```
-   python error-prompt.py
-    ```
-
-Maintenant que vous avez interagi avec le modèle, vous pouvez passer en revue les données dans Azure Monitor.
+    Le modèle génèrera une réponse, qui sera capturée avec Application Insights. Vous pouvez visualiser les traces dans le **portail Azure AI Foundry**.
 
 > **Note** : l’affichage des données de surveillance dans Azure Monitor peut prendre quelques minutes.
 
-## 4. Afficher les données de surveillance dans Azure Monitor
+## Afficher les données de traces dans le portail Azure AI Foundry
 
-Pour afficher les données collectées à partir de vos interactions de modèle, accédez au tableau de bord lié à un classeur dans Azure Monitor.
+Après avoir exécuté le script, vous avez capturé une trace de l’exécution de votre application d’IA. Vous allez maintenant l’explorer à l’aide d’Application Insights dans Azure AI Foundry.
 
-### R : Dans le portail Azure AI Foundry, accédez à Azure Monitor.
+> **Note :** plus tard, vous réexécuterez le code et afficherez à nouveau les traces dans le portail Azure AI Foundry. Commençons par regarder où trouver les traces pour les visualiser.
 
+### Accéder au portail Azure AI Foundry
+
+1. **Gardez Cloud Shell ouvert !** Vous y reviendrez pour mettre à jour le code et le réexécuter.
 1. Accédez à l’onglet de votre navigateur avec le **portail Azure AI Foundry** ouvert.
-1. Dans le menu de gauche, sélectionnez **Suivi**.
-1. Sélectionnez le lien en haut qui indique **Consulter votre tableau de bord Insights pour les applications d’IA générative**. Le lien ouvre Azure Monitor dans un nouvel onglet.
-1. Passez en revue la **vue d’ensemble** qui fournit des données résumées des interactions avec votre modèle déployé.
+1. Utilisez le menu de gauche, sélectionnez **Suivi**.
+1. *Si* aucune donnée n’est affichée, **actualisez** la vue.
+1. Sélectionnez la trace **train_guide_session** pour ouvrir une nouvelle fenêtre qui affiche plus de détails.
 
-## 5. Interpréter les mesures de surveillance dans Azure Monitor
+### Vérifier votre trace
 
-Maintenant, il est temps d’explorer les données et de commencer à interpréter les informations qu’elles vous fournissent.
+Cette vue affiche la trace d’une session complète de l’assistant d’IA Trail Guide.
 
-### R : Passer en revue l’utilisation des jetons
+- **Étendue de niveau supérieur** : trail_guide_session. Il s’agit de l’étendue parente. Elle représente l’ensemble de l’exécution de votre assistant du début à la fin.
 
-Concentrez-vous d’abord sur la section **Utilisation des jetons** et passez en revue les mesures suivantes :
+- **Étendues enfants imbriquées** : chaque ligne mise en retrait représente une opération imbriquée. Vous y trouverez :
 
-- **Jetons d’invite** : nombre total de jetons utilisés dans l’entrée (les invites que vous avez envoyées) pour tous les appels de modèle.
+    - **recommend_hike** qui capture votre logique pour décider d’une randonnée.
+    - **recommend_model_call** qui est l’étendue créée par call_model() à l’intérieur de recommend_hike.
+    - **chat gpt-4o** qui est automatiquement instrumenté par le Kit de développement logiciel (SDK) Azure AI Inference pour afficher l’interaction LLM réelle.
 
-> Considérez cela comme le *coût pour poser une question* au modèle.
+1. Vous pouvez cliquer sur n’importe quelle étendue pour afficher :
 
-- **Jetons d’achèvement** : nombre de jetons retournés en sortie par le modèle, essentiellement la longueur des réponses.
+    1. Sa durée.
+    1. Ses attributs tels que l’invite utilisateur, les jetons utilisés, le temps de réponse.
+    1. Toutes les erreurs ou données personnalisées attachées à **span.set_attribute(...)**.
 
-> Les jetons d’achèvement générés représentent souvent la majeure partie de l’utilisation et du coût des jetons, en particulier pour les réponses longues ou détaillées.
+## Ajouter d’autres fonctions à votre code
 
-- **Nombre total de jetons** : total combiné des jetons d’invite et des jetons d’achèvement.
 
-> C’est la mesure la plus importante pour la facturation et les performances, car elle détermine la latence et le coût.
+1. Exécutez la commande suivante pour **ouvrir de nouveau le script :**
 
-- **Nombre total d’appels** : nombre de demandes d’inférence distinctes, qui est le nombre de fois où le modèle a été appelé.
+    ```
+   code start-prompt.py
+    ```
 
-> Utile pour analyser le débit et comprendre le coût moyen par appel.
+1. Dans le script, recherchez **# Function to generate a trip profile for the recommended hike**.
+1. Sous ce commentaire, collez le code suivant :
 
-### B. Comparer les invites individuelles
+    ```
+   def generate_trip_profile(hike_name):
+       with tracer.start_as_current_span("trip_profile_generation") as span:
+           prompt = f"""
+           Hike: {hike_name}
+           Respond ONLY with a valid JSON object and nothing else.
+           Do not include any intro text, commentary, or markdown formatting.
+           Format: {{ "trailType": ..., "typicalWeather": ..., "recommendedGear": [ ... ] }}
+           """
+           response = call_model(
+               "You are an AI assistant that returns structured hiking trip data in JSON format.",
+               prompt,
+               "trip_profile_model_call"
+           )
+           print("🔍 Raw model response:", response)
+           try:
+               profile = json.loads(response)
+               span.set_attribute("profile.success", True)
+               return profile
+           except json.JSONDecodeError as e:
+               print("❌ JSON decode error:", e)
+               span.set_attribute("profile.success", False)
+               return {}
+    ```
 
-Faites défiler vers le bas pour rechercher les **étendues d’IA générative**, qui sont visualisées sous la forme d’une table où chaque invite est représentée sous la forme d’une nouvelle ligne de données. Passez en revue et comparez le contenu des colonnes suivantes :
+1. Dans le script, recherchez **# Function to match recommended gear with products in the catalog**.
+1. Sous ce commentaire, collez le code suivant :
 
-- **Statut** : indique si un appel de modèle a réussi ou échoué.
+    ```
+   def match_products(recommended_gear):
+       with tracer.start_as_current_span("product_matching") as span:
+           matched = []
+           for gear_item in recommended_gear:
+               for product in mock_product_catalog:
+                   if any(word in product.lower() for word in gear_item.lower().split()):
+                       matched.append(product)
+                       break
+           span.set_attribute("matched.count", len(matched))
+           return matched
+    ```
 
-> Utilisez cette colonne pour identifier les invites problématiques ou les erreurs de configuration. La dernière invite a probablement échoué car l’invite était trop longue.
+1. Dans le script, recherchez **# Run profile function**.
+1. Ci-dessous et **aligné avec** ce commentaire, collez le code suivant :
 
-- **Durée** : indique le délai de réponse du modèle, en millisecondes.
+    ```
+           profile = generate_trip_profile(hike)
+           if not profile:
+           print("Failed to generate trip profile. Please check Application Insights for trace.")
+           exit(1)
 
-> Comparez les lignes pour explorer les modèles d’invite qui entraînent des temps de traitement plus longs.
+           print(f"\n📋 Trip Profile for {hike}:")
+           print(json.dumps(profile, indent=2))
+    ```
 
-- **Entrée** : affiche le message utilisateur envoyé au modèle.
+1. Dans le script, recherchez **# Run match product function**.
+1. Ci-dessous et **aligné avec** ce commentaire, collez le code suivant :
 
-> Utilisez cette colonne pour évaluer quelles formulations d’invite sont efficaces ou problématiques.
+    ```
+           matched = match_products(profile.get("recommendedGear", []))
+           print("\n🛒 Recommended Products from Lakeshore Retail:")
+           print("\n".join(matched))
+    ```
 
-- **Système** : affiche le message système utilisé dans l’invite (le cas échéant).
+1. **Enregistrez les modifications** que vous avez apportées au script.
+1. Dans le volet de ligne de commande Cloud Shell, sous l’éditeur de code, entrez la commande suivante pour **exécuter le script** :
 
-> Comparez les entrées pour évaluer l’impact de l’utilisation ou de la modification des messages système.
+    ```
+   python start-prompt.py
+    ```
 
-- **Sortie** : contient la réponse du modèle.
+1. Donnez une description du type de randonnée que vous recherchez, par exemple :
 
-> Utilisez cette colonne pour évaluer l’éloquence, la pertinence et la cohérence. En particulier en ce qui concerne les nombres de jetons et la durée.
+    ```
+   I want to go for a multi-day adventure along the beach
+    ```
 
-## 6. (FACULTATIF) Créer une alerte
+> **Note** : l’affichage des données de surveillance dans Azure Monitor peut prendre quelques minutes.
 
-Si vous avez encore du temps, essayez de configurer une alerte pour vous avertir lorsque la latence du modèle dépasse un certain seuil. Il s’agit d’un exercice conçu pour vous mettre au défi, ce qui signifie que les instructions sont intentionnellement moins détaillées.
+### Afficher les nouvelles traces dans le portail Azure AI Foundry
 
-- Dans Azure Monitor, créez une **règle d’alerte** pour votre projet et modèle Azure AI Foundry.
-- Choisissez une mesure telle que **Durée de la requête (ms)** et définissez un seuil (par exemple, supérieur à 4 000 ms).
-- Créez un **groupe d’actions** pour définir la façon dont vous serez averti.
+1. Revenez au portail Azure AI Foundry.
+1. Une nouvelle trace portant le même nom **trail_guide_session** doit apparaître. Actualisez la vue si nécessaire.
+1. Sélectionnez la nouvelle trace pour ouvrir la vue plus détaillée.
+1. Passez en revue les nouvelles étendues enfants imbriquées, **trip_profile_generation** et **product_matching**.
+1. Sélectionnez **product_matching** et passez en revue les métadonnées qui s’affichent.
 
-Les alertes vous aident à préparer la production en établissant une surveillance proactive. Les alertes que vous configurez dépendent des priorités de votre projet et de la façon dont votre équipe a décidé de mesurer et d’atténuer les risques.
+    Dans la fonction product_matching, vous avez inclus **span.set_attribute("matched.count", len(matched)).** En définissant l’attribut avec la paire clé-valeur **matched.count** et la longueur de la variable mise en correspondance, vous avez ajouté ces informations à la trace **product_matching**. Vous trouverez cette paire clé-valeur sous les **attributs** dans les métadonnées.
+
+## (FACULTATIF) Tracer une erreur
+
+Si vous avez du temps supplémentaire, vous pouvez examiner comment utiliser les traces en cas d’erreur. Un script susceptible de déclencher une erreur vous est fourni. Exécutez-le et passez les traces en revue.
+
+Il s’agit d’un exercice conçu pour vous mettre au défi, ce qui signifie que les instructions sont intentionnellement moins détaillées.
+
+1. Dans Cloud Shell, ouvrez le script **error-prompt.py**. Ce script se trouve dans le même répertoire que le script **start-prompt.py**. Vérifiez son contenu.
+1. Exécutez le script **error-prompt.py**. Fournissez une réponse dans la ligne de commande lorsque vous y êtes invité.
+1. *Normalement*, le message de sortie devrait inclure **Failed to generate trip profile. Please check Application Insights for trace.**.
+1. Accédez à la trace de **trip_profile_generation** et examinez pourquoi une erreur s’est produite.
+
+<br>
+<details>
+<summary><b>Obtenez une réponse</b> : pourquoi vous avez pu rencontrer une erreur...</summary><br>
+<p>Si vous inspectez la trace LLM pour la fonction generate_trip_profile, vous remarquerez que la réponse de l’assistant inclut des backticks et le mot json pour mettre en forme la sortie en tant que bloc de code.
+
+Bien que cela soit utile pour l’affichage, cela entraîne des problèmes dans le code, car la sortie n’est plus du JSON valide. Cela entraîne une erreur d’analyse lors du traitement ultérieur.
+
+L’erreur est probablement due à la façon dont le LLM doit adhérer à un format spécifique pour sa sortie. L’inclusion des instructions dans l’invite utilisateur paraît plus efficace que de les placer dans l’invite du système.</p>
+</details>
 
 ## Où trouver d’autres labos
 
-Vous pouvez explorer d’autres labos et exercices dans le [portail d’apprentissage d’Azure AI Foundry](https://ai.azure.com) ou consulter la **section de labo** du cours pour obtenir d’autres activités.
+Vous pouvez explorer d’autres labos et exercices dans le [portail Learning d’Azure AI Foundry](https://ai.azure.com) ou consulter la **section de labo** du cours pour obtenir d’autres activités disponibles.
