@@ -1,25 +1,30 @@
 ---
 lab:
   title: Explorer l’ingénierie des invites avec Prompty
+  description: Découvrez comment utiliser Prompty pour tester et améliorer rapidement les différentes invites avec votre modèle de langage et vous assurer qu’elles sont construites et orchestrées pour obtenir de meilleurs résultats.
 ---
 
 ## Explorer l’ingénierie des invites avec Prompty
 
+Cet exercice prend environ **45** minutes.
+
+> **Note** : cet exercice suppose une certaine connaissance d’Azure AI Foundry, c’est pourquoi certaines instructions sont intentionnellement moins détaillées pour encourager une exploration plus active et un apprentissage pratique.
+
+## Introduction
+
 Pendant l’idéation, vous souhaitez tester et améliorer rapidement les différentes invites avec votre modèle de langage. Il existe différentes façons d’aborder l’ingénierie d’invite : via le terrain de jeu dans le portail Azure AI Foundry ou en utilisant Prompty pour une approche plus orientée code.
 
-Dans cet exercice, vous allez explorer l’ingénierie d’invite avec Prompty dans Visual Studio Code, à l’aide d’un modèle déployé via Azure AI Foundry.
+Dans cet exercice, vous allez explorer l’ingénierie des invites avec Prompty dans Azure Cloud Shell, à l’aide d’un modèle déployé via Azure AI Foundry.
 
-Cet exercice prend environ **40** minutes.
+## Configurer l’environnement
 
-## Scénario
+Pour effectuer les tâches de cet exercice, vous avez besoin des éléments suivants :
 
-Imaginez que vous souhaitez créer une application pour aider les étudiants à apprendre à coder en Python. Dans l’application, vous souhaitez un tuteur automatisé qui peut aider les étudiants à écrire et évaluer du code. Toutefois, vous ne souhaitez pas que l’application de conversation fournisse toutes les réponses. Vous voulez que les étudiants reçoivent des conseils personnalisés qui les encouragent à réfléchir à la façon de procéder.
+- Un hub Azure AI Foundry
+- Un projet Azure AI Foundry
+- Un modèle déployé (comme GPT-4o).
 
-Vous avez sélectionné un modèle GPT-4 pour commencer à expérimenter. Vous souhaitez maintenant appliquer l’ingénierie d’invite pour guider le comportement de la conversation afin qu’elle devienne un tuteur qui génère des conseils personnalisés.
-
-Commençons par déployer les ressources nécessaires pour utiliser ce modèle dans le portail Azure AI Foundry.
-
-## Créer un projet et un hub Azure AI
+### Créer un projet et un hub Azure AI
 
 > **Note** : si vous disposez déjà d’un hub et d’un projet Azure AI, vous pouvez ignorer cette procédure et utiliser votre projet existant.
 
@@ -87,7 +92,7 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
 
 1. Copiez ces valeurs, car elles seront utilisées ultérieurement.
    
-## Configurer votre environnement de développement local
+### Configurer votre environnement de développement local
 
 Pour expérimenter et itérer rapidement, vous allez utiliser Prompty dans Visual Studio (VS) Code. Préparons VS Code pour l’idéation locale.
 

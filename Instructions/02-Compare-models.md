@@ -1,6 +1,7 @@
 ---
 lab:
   title: Comparer les modèles de langage du catalogue de modèles
+  description: Découvrez comment comparer et sélectionner les modèles appropriés pour votre projet IA générative.
 ---
 
 ## Comparer les modèles de langage du catalogue de modèles
@@ -9,7 +10,7 @@ Lorsque vous avez défini votre cas d’usage, vous pouvez utiliser le catalogue
 
 Dans cet exercice, vous comparez deux modèles de langage via le catalogue de modèles dans le portail Azure AI Foundry.
 
-Cet exercice prend environ **25** minutes.
+Cet exercice prend environ **30** minutes.
 
 ## Scénario
 
@@ -31,6 +32,10 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
 
     > **Remarque** : si vous avez déjà créé un Cloud Shell qui utilise un environnement *Bash*, basculez-le vers ***PowerShell***.
 
+1. Dans la barre d’outils Cloud Shell, dans le menu **Paramètres**, sélectionnez **Accéder à la version classique**.
+
+    **<font color="red">Assurez-vous d’avoir basculé vers la version classique de Cloud Shell avant de continuer.</font>**
+
 1. Dans le volet PowerShell, entrez les commandes suivantes pour cloner le référentiel de cet exercice :
 
      ```powershell
@@ -50,7 +55,7 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
 1. Ensuite, entrez la commande suivante pour exécuter le modèle de démarrage. Il approvisionne un hub IA avec des ressources dépendantes, un projet IA, des services IA et un point de terminaison en ligne. Il déploiera également les modèles GPT-4 Turbo, GPT-4o et GPT-4o mini.
 
      ```powershell
-    azd up  
+    azd up
      ```
 
 1. Lorsque vous y êtes invité, choisissez l’abonnement que vous souhaitez utiliser, puis choisissez l’un des emplacements suivants pour l’approvisionnement des ressources :
@@ -78,20 +83,11 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
         </ul>
     </details>
 
-1. Une fois que toutes les ressources ont été approvisionnées, utilisez les commandes suivantes pour récupérer le point de terminaison et la clé d’accès à votre ressource AI Services. Notez que vous devez remplacer `<rg-env_name>` et `<aoai-xxxxxxxxxx>` par les noms de votre groupe de ressources et de votre ressource AI Services. Les deux sont imprimés dans la sortie du déploiement.
-
-     ```powershell
-    Get-AzCognitiveServicesAccount -ResourceGroupName <rg-env_name> -Name <aoai-xxxxxxxxxx> | Select-Object -Property endpoint
-    Get-AzCognitiveServicesAccountKey -ResourceGroupName <rg-env_name> -Name <aoai-xxxxxxxxxx> | Select-Object -Property Key1
-     ```
-
-1. Copiez ces valeurs, car elles seront utilisées ultérieurement.
-
 ## Comparer les modèles
 
 Vous savez qu’il existe trois modèles qui acceptent les images comme entrée dont l’infrastructure d’inférence est entièrement gérée par Azure. Maintenant, vous devez les comparer pour décider lequel est idéal pour notre cas d’usage.
 
-1. Dans un navigateur web, ouvrez le [portail Azure Ai Foundry](https://ai.azure.com) à l’adresse `https://ai.azure.com` et connectez-vous en utilisant vos informations d’identification Azure.
+1. Dans un nouvel onglet de navigateur, ouvrez le [portail Azure AI Foundry](https://ai.azure.com) à l’adresse `https://ai.azure.com` et connectez-vous en utilisant vos informations d’identification Azure.
 1. Si vous y êtes invité, sélectionnez le projet IA créé précédemment.
 1. Accédez à la page **Catalogue de modèles** à l’aide du menu de gauche.
 1. Sélectionnez **Comparer les modèles** (recherchez le bouton en regard des filtres dans le volet de recherche).
@@ -107,14 +103,95 @@ Passez en revue le tracé et essayez de répondre aux questions suivantes :
 
 La précision des métriques de benchmark est calculée en fonction des jeux de données génériques disponibles publiquement. À partir du tracé, nous pouvons déjà filtrer l’un des modèles, car il a le coût le plus élevé par jeton, mais pas la précision la plus élevée. Avant de prendre une décision, examinons la qualité des sorties des deux modèles restants spécifiques à votre cas d’usage.
 
-## Configurer votre environnement de développement local
+## Configurer votre environnement de développement dans Cloud Shell
 
-Pour expérimenter et itérer rapidement, vous allez utiliser un notebook avec du code Python dans Visual Studio (VS) Code. Préparons VS Code pour l’idéation locale.
+Pour expérimenter et itérer rapidement, vous utiliserez un ensemble de scripts Python dans Cloud Shell.
 
-1. Ouvrez VS Code et **clonez** le référentiel Git suivant : [https://github.com/MicrosoftLearning/mslearn-genaiops.git](https://github.com/MicrosoftLearning/mslearn-genaiops.git).
-1. Stockez le clone sur un lecteur local et ouvrez le dossier après le clonage.
-1. Dans l’Explorateur VS Code (volet gauche), ouvrez le notebook **02-Compare-models.ipynb** dans le dossier **Files/02**.
-1. Exécutez toutes les cellules dans le notebook.
+1. Dans le portail Azure AI Foundry, affichez la page **Vue d’ensemble** de votre projet.
+1. Dans la zone **Détails du projet**, notez la **chaîne de connexion du projet**.
+1. Enregistrez la chaîne dans un bloc-notes. Vous utiliserez cette chaîne de connexion pour vous connecter à votre projet dans une application cliente.
+1. Dans l’onglet Portail Azure, ouvrez Cloud Shell si vous l’avez fermé avant et exécutez la commande suivante pour accéder au dossier avec les fichiers de code utilisés dans cet exercice :
+
+     ```powershell
+    cd ~/mslearn-genaiops/Files/02/
+     ```
+
+1. Dans le volet de ligne de commande Cloud Shell, saisissez la commande suivante pour installer les bibliothèques dont vous avez besoin :
+
+    ```powershell
+   python -m venv labenv
+   ./labenv/bin/Activate.ps1
+   pip install python-dotenv azure-identity azure-ai-projects openai matplotlib
+    ```
+
+1. Saisissez la commande suivante pour ouvrir le fichier de configuration fourni :
+
+    ```powershell
+   code .env
+    ```
+
+    Le fichier s’ouvre dans un éditeur de code.
+
+1. Dans le fichier de code, remplacez l’espace réservé **your_project_connection_string** par la chaîne de connexion de votre projet (copiée à partir de la page **Vue d’ensemble** du projet dans le portail Azure AI Foundry). Notez que le premier et deuxième modèle utilisés dans l’exercice sont respectivement **gpt-4o** et **gpt-4o-mini**.
+1. *Une* fois que vous avez remplacé l’espace réservé, dans l’éditeur de code, utilisez la commande **CTRL+S**ou**Faites un clic droit sur > Enregistrer** pour enregistrer vos modifications, puis utilisez la commande **CTRL+Q** ou **Faites un clic droit > Quitter** pour fermer l’éditeur de code tout en gardant la ligne de commande Cloud Shell ouverte.
+
+## Envoyer des invites à vos modèles déployés
+
+Vous allez maintenant exécuter plusieurs scripts qui envoient différentes invites à vos modèles déployés. Ces interactions génèrent des données que vous pouvez observer ultérieurement dans Azure Monitor.
+
+1. Exécutez la commande suivante pour **afficher le premier script** fourni :
+
+    ```powershell
+   code model1.py
+    ```
+
+Le script encodera l’image utilisée dans cet exercice dans une URL de données. Cette URL sera utilisée pour incorporer l’image directement dans la requête de saisie semi-automatique de conversation avec la première invite de texte. Le script affichera ensuite la réponse du modèle, l’ajoutera à l’historique des conversations, puis enverra une deuxième invite. La deuxième invite est envoyée et stockée dans le but de rendre les mesures observées ultérieurement plus loin. Néanmoins, vous pouvez supprimer les marques de commentaire de la section facultative du code pour obtenir également la deuxième réponse en sortie.
+
+1. Dans le volet de ligne de commande Cloud Shell sous l’éditeur de code, entrez la commande suivante pour exécuter le **premier** script :
+
+    ```powershell
+   python model1.py
+    ```
+
+    Le modèle génèrera une réponse, qui sera capturée avec Application Insights pour une analyse plus approfondie. Utilisons le deuxième modèle pour explorer leurs différences.
+
+1. Dans le volet de ligne de commande Cloud Shell sous l’éditeur de code, entrez la commande suivante pour exécuter le **deuxième** script :
+
+    ```powershell
+   python model2.py
+    ```
+
+    Maintenant que vous disposez des sorties des deux modèles, y a-t-il des différences entre elles ?
+
+    > **Remarque** : Vous pouvez également tester les scripts donnés comme réponses en copiant les blocs de code, en exécutant la commande `code your_filename.py`, en collant le code dans l’éditeur, en enregistrant le fichier, puis en exécutant la commande `python your_filename.py`. Si le script s’est exécuté correctement,une image enregistrée devrait être disponible. Vous pouvez la télécharger sur `download imgs/gpt-4o.jpg` ou `download imgs/gpt-4o-mini.jpg`.
+
+## Comparer l’utilisation des jetons des modèles
+
+Enfin, vous allez exécuter un troisième script qui tracera le nombre de jetons traités au fil du temps pour chaque modèle. Ces données sont obtenues à partir d’Azure Monitor.
+
+1. Avant d’exécuter le dernier script, vous devez copier l’ID de la ressource de votre Azure AI Services à partir du portail Azure. Accédez à la page de présentation de votre ressource Azure AI Services, puis sélectionnez **Affichage JSON**. Copiez l’ID de la ressource et remplacez l’espace réservé `your_resource_id` dans le fichier de code :
+
+    ```powershell
+   code plot.py
+    ```
+
+1. Enregistrez les changements apportés.
+
+1. Dans le volet de ligne de commande Cloud Shell sous l’éditeur de code, entrez la commande suivante pour exécuter le **troisième** script :
+
+    ```powershell
+   python plot.py
+    ```
+
+1. Une fois le script terminé, entrez la commande suivante pour télécharger le tracé des mesures :
+
+    ```powershell
+   download imgs/plot.png
+    ```
+
+## Conclusion
+
+Après examen du tracé et rappel des valeurs de point de référence dans le rapport Exactitude vs. En vous basant sur le graphique des coûts présenté précédemment, pouvez-vous déterminer quel modèle est le mieux adapté à votre cas d’utilisation ? La différence de précision entre les sorties justifie-t-elle l’écart observé dans le nombre de jetons générés et par conséquent dans le coût ?
 
 ## Nettoyage
 

@@ -1,6 +1,7 @@
 ---
 lab:
   title: Analyser et déboguer votre application d’IA générative avec le traçage
+  description: 'Découvrez comment déboguer votre application d’IA générative à l’aide du traçage de son flux de travail, de l’entrée utilisateur à la réponse du modèle, en passant par le post-traitement.'
 ---
 
 # Analyser et déboguer votre application d’IA générative avec le traçage
@@ -19,47 +20,57 @@ Vous allez interagir avec un modèle déployé pour simuler un parcours utilisat
 
 Pour effectuer les tâches de cet exercice, vous avez besoin des éléments suivants :
 
-- Hub Azure AI Foundry
+- Un hub Azure AI Foundry
 - Un projet Azure AI Foundry
 - Un modèle déployé (comme GPT-4o)
 - Une ressource Application Insights connectée
 
 ### Créer un projet et un hub AI Foundry
 
-Pour configurer rapidement un hub et un projet, des instructions simples pour utiliser l’IU du portail Azure AI Foundry sont fournies ci-dessous.
+Pour configurer rapidement un hub et un projet, des instructions simples pour utiliser l’interface utilisateur du portail Azure AI Foundry sont fournies ci-dessous.
 
-1. Accédez au portail Azure AI Foundry : ouvrez [https://ai.azure.com](https://ai.azure.com).
-1. Connectez-vous à l'aide de vos informations d'identification Azure.
-1. Créez un projet :
-    1. Accédez à **Tous les hubs + projets**.
-    1. Sélectionnez **+ Nouveau projet**.
-    1. Entrez un **nom de projet**.
-    1. Lorsque vous y êtes invité, **créez un hub**.
-    1. Personnalisez le hub :
-        1. Sélectionnez un **abonnement**, un **groupe de ressources**, un **emplacement**, etc.
-        1. Connectez une **nouvelle ressource Azure AI Services** (ignorez la recherche IA).
-    1. Passez en revue les informations, puis sélectionnez **Créer**.
-1. **Attendez la fin du déploiement** (environ 1 ou 2 minutes).
+1. Dans un navigateur web, ouvrez le [portail Azure AI Foundry](https://ai.azure.com) à l’adresse `https://ai.azure.com` et connectez-vous en utilisant vos informations d’identification Azure.
+1. Sur la page d’accueil, sélectionnez **+Créer un projet**.
+1. Dans l’assistant **Créer un projet**, saisissez un nom valide et, si un hub existant est suggéré, choisissez l’option permettant d’en créer un. Passez ensuite en revue les ressources Azure qui seront créées automatiquement pour prendre en charge votre hub et votre projet.
+1. Sélectionnez **Personnaliser** et spécifiez les paramètres suivants pour votre hub :
+    - **Nom du hub** : *un nom valide pour votre hub*
+    - **Abonnement** : *votre abonnement Azure*
+    - **Groupe de ressources** : *créez ou sélectionnez un groupe de ressources*
+    - **Emplacement** : sélectionnez **Aidez-moi à choisir**, puis sélectionnez **gpt-4o** dans la fenêtre de l’assistant de l’emplacement et utilisez la région recommandée\*.
+    - **Connecter Azure AI Services ou Azure OpenAI** : *créer une nouvelle ressource AI Services*
+    - **Connecter la Recherche Azure AI** : ignorer la connexion
+
+    > \* Les ressources Azure OpenAI sont limitées par des quotas de modèles régionaux. Si une limite de quota est atteinte plus tard dans l’exercice, vous devrez peut-être créer une autre ressource dans une autre région.
+
+1. Sélectionnez **Suivant** et passez en revue votre configuration. Sélectionnez **Créer** et patientez jusqu’à ce que l’opération se termine.
 
 ### Déployer un modèle
 
 Pour générer des données que vous pouvez surveiller, vous devez d’abord déployer un modèle et interagir avec celui-ci. Dans les instructions, vous êtes invité à déployer un modèle GPT-4o, mais **vous pouvez utiliser n’importe quel modèle** à partir de la collection Azure OpenAI Service disponible.
 
 1. Dans le menu de gauche, dans la section **Mes ressources**, sélectionnez la page **Modèles + points de terminaison**.
-1. Déployez un **modèle de base** et choisissez **gpt-4o**.
-1. **Personnalisez les détails du déploiement**.
-1. Définissez la **capacité** sur **5 000 jetons par minute (TPM).**
+1. Dans le menu **+ Déployer un modèle**, sélectionnez **Déployer le modèle de base**.
+1. Sélectionnez le modèle **gpt-4o** dans la liste et déployez-le avec les paramètres suivants en sélectionnant **Personnaliser** dans les détails du déploiement :
+    - **Nom du déploiement** : *nom valide pour votre modèle de déploiement*
+    - **Type de déploiement** : Standard
+    - **Mise à jour automatique de la version** : activée
+    - **Version du modèle** : *sélectionnez la version la plus récente disponible.*
+    - **Ressource IA connectée** : *sélectionnez votre connexion de ressources Azure OpenAI*
+    - **Limite de débit en jetons par minute (en milliers)** : 5 000
+    - **Filtre de contenu** : DefaultV2
+    - **Enable dynamic quota** : désactivé
 
-Le hub et le projet sont prêts, avec toutes les ressources Azure requises provisionnées automatiquement.
+    > **Remarque** : La réduction du nombre de jetons par minute permet d’éviter une surutilisation du quota disponible dans l’abonnement que vous utilisez. 5 000 TPM devraient suffire pour les données utilisées dans cet exercice. Si votre quota disponible est inférieur à cette valeur, vous pourrez tout de même terminer l’exercice, mais vous pourriez rencontrer des erreurs en cas de dépassement de la limite.
+
+1. Attendez la fin du déploiement.
 
 ### Se connecter à Application Insights
 
 Connectez Application Insights à votre projet dans Azure AI Foundry pour commencer à collecter des données à des fins d’analyse.
 
-1. Ouvrez votre projet dans le portail Azure AI Foundry.
 1. Utilisez le menu de gauche, puis sélectionnez la page **Suivi**.
-1. **Créez une** ressource Application Insights pour vous connecter à votre application.
-1. Entrez le **nom d’une ressource Application Insights**.
+1. **Créez** une ressource Application Insights pour vous connecter à votre application.
+1. Entrez un nom de ressource Application Insights, puis sélectionnez **Créer**.
 
 Application Insights est désormais connecté à votre projet et les données commencent à être collectées pour l’analyse.
 
@@ -79,7 +90,7 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 1. Utilisez le bouton **[\>_]** à droite de la barre de recherche, en haut de la page, pour créer un environnement Cloud Shell dans le portail Azure, puis sélectionnez un environnement ***PowerShell*** avec aucun stockage dans votre abonnement.
 1. Dans la barre d’outils Cloud Shell, dans le menu **Paramètres**, sélectionnez **Accéder à la version classique**.
 
-    **<font color="red">Assurez-vous d’avoir basculé vers la version classique du Cloud Shell avant de continuer.</font>**
+    **<font color="red">Assurez-vous d’avoir basculé vers la version classique de Cloud Shell avant de continuer.</font>**
 
 1. Dans le volet Cloud Shell, entrez et exécutez les commandes suivantes :
 
@@ -115,9 +126,9 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 1. Dans le fichier de code :
 
     1. Remplacez l’espace réservé **your_project_connection_string** par la chaîne de connexion de votre projet (copiée à partir de la page **Vue d’ensemble** du projet dans le portail Azure AI Foundry).
-    1. Remplacez l’espace réservé **your_model_deployment** par le nom que vous avez attribué à votre modèle de déploiement gpt-4o (par défaut `gpt-4o`).
+    1. Remplacez l’espace réservé **your_model_deployment** par le nom que vous avez attribué à votre modèle de déploiement GPT-4o (par défaut `gpt-4o`).
 
-1. *Une fois* que vous avez remplacé les espaces réservés, dans l’éditeur de code, utilisez la commande **Ctrl+S** ou **Clic droit > Enregistrer** pour **enregistrer vos modifications**.
+1. *Une* fois que vous avez remplacé les espaces réservés, dans l’éditeur de code, utilisez la commande **CTRL+S** ou **Faites un clic droit sur > Enregistrer** pour **enregistrer vos modifications**, puis utilisez la commande **CTRL+Q** ou **Faites un clic droit > Quitter** pour fermer l’éditeur de code tout en gardant la ligne de commande Cloud Shell ouverte.
 
 ### Mettre à jour le code de votre application d’IA générative
 
@@ -228,7 +239,7 @@ Après avoir exécuté le script, vous avez capturé une trace de l’exécution
 
 1. **Gardez Cloud Shell ouvert !** Vous y reviendrez pour mettre à jour le code et le réexécuter.
 1. Accédez à l’onglet de votre navigateur avec le **portail Azure AI Foundry** ouvert.
-1. Utilisez le menu de gauche, sélectionnez **Suivi**.
+1. Dans le menu de gauche, sélectionnez **Suivi**.
 1. *Si* aucune donnée n’est affichée, **actualisez** la vue.
 1. Sélectionnez la trace **train_guide_session** pour ouvrir une nouvelle fenêtre qui affiche plus de détails.
 
@@ -252,7 +263,7 @@ Cette vue affiche la trace d’une session complète de l’assistant d’IA Tra
 
 ## Ajouter d’autres fonctions à votre code
 
-
+1. Accédez à l’onglet de votre navigateur avec le **portail Azure** ouvert.
 1. Exécutez la commande suivante pour **ouvrir de nouveau le script :**
 
     ```
@@ -309,8 +320,8 @@ Cette vue affiche la trace d’une session complète de l’assistant d’IA Tra
     ```
            profile = generate_trip_profile(hike)
            if not profile:
-           print("Failed to generate trip profile. Please check Application Insights for trace.")
-           exit(1)
+               print("Failed to generate trip profile. Please check Application Insights for trace.")
+               exit(1)
 
            print(f"\n📋 Trip Profile for {hike}:")
            print(json.dumps(profile, indent=2))
@@ -337,6 +348,17 @@ Cette vue affiche la trace d’une session complète de l’assistant d’IA Tra
     ```
    I want to go for a multi-day adventure along the beach
     ```
+
+<br>
+<details>
+<summary><b>Script de solution</b> : Si votre code ne fonctionne pas.</summary><br>
+<p>Si vous inspectez la trace LLM pour la fonction generate_trip_profile, vous remarquerez que la réponse de l’assistant inclut des backticks et le mot json pour mettre en forme la sortie en tant que bloc de code.
+
+Bien que cela soit utile pour l’affichage, cela entraîne des problèmes dans le code, car la sortie n’est plus du JSON valide. Cela entraîne une erreur d’analyse lors du traitement ultérieur.
+
+L’erreur est probablement due à la façon dont le LLM doit adhérer à un format spécifique pour sa sortie. L’inclusion des instructions dans l’invite utilisateur paraît plus efficace que de les placer dans l’invite du système.</p>
+</details>
+
 
 > **Note** : l’affichage des données de surveillance dans Azure Monitor peut prendre quelques minutes.
 
@@ -373,4 +395,4 @@ L’erreur est probablement due à la façon dont le LLM doit adhérer à un for
 
 ## Où trouver d’autres labos
 
-Vous pouvez explorer d’autres labos et exercices dans le [portail Learning d’Azure AI Foundry](https://ai.azure.com) ou consulter la **section de labo** du cours pour obtenir d’autres activités disponibles.
+Vous pouvez explorer d’autres labos et exercices dans le [portail d’apprentissage d’Azure AI Foundry](https://ai.azure.com) ou consulter la **section de labo** du cours pour obtenir d’autres activités.
