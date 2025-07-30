@@ -1,6 +1,7 @@
 ---
 lab:
   title: Surveillez votre application d'IA générative
+  description: Découvrez comment surveiller les interactions avec votre modèle déployé et obtenir des Informations sur l’optimisation de son utilisation avec votre application IA générative.
 ---
 
 # Surveillez votre application d'IA générative
@@ -13,64 +14,71 @@ Cet exercice prend environ **30** minutes.
 
 Dans cet exercice, vous allez activer la surveillance d’une application de complétion de conversation et afficher ses performances dans Azure Monitor. Vous interagissez avec votre modèle déployé pour générer des données, afficher les données générées via le tableau de bord Insights pour les applications d’IA génératives et configurer des alertes pour vous aider à optimiser le déploiement du modèle.
 
-## 1. Configurez l’environnement.
+## Configurer l’environnement
 
 Pour effectuer les tâches de cet exercice, vous avez besoin des éléments suivants :
 
-- Hub Azure AI Foundry
+- Un hub Azure AI Foundry
 - Un projet Azure AI Foundry
 - Un modèle déployé (comme GPT-4o)
 - Une ressource Application Insights connectée
 
-### R : Créer un projet et un hub AI Foundry
+### Créer un projet et un hub AI Foundry
 
-Pour configurer rapidement un hub et un projet, des instructions simples pour utiliser l’IU du portail Azure AI Foundry sont fournies ci-dessous.
+Pour configurer rapidement un hub et un projet, des instructions simples pour utiliser l’interface utilisateur du portail Azure AI Foundry sont fournies ci-dessous.
 
-1. Accédez au portail Azure AI Foundry : ouvrez [https://ai.azure.com](https://ai.azure.com).
-1. Connectez-vous à l'aide de vos informations d'identification Azure.
-1. Créez un projet :
-    1. Accédez à **Tous les hubs + projets**.
-    1. Sélectionnez **+ Nouveau projet**.
-    1. Entrez un **nom de projet**.
-    1. Lorsque vous y êtes invité, **créez un hub**.
-    1. Personnalisez le hub :
+1. Dans un navigateur web, ouvrez le [portail Azure AI Foundry](https://ai.azure.com) à l’adresse `https://ai.azure.com` et connectez-vous en utilisant vos informations d’identification Azure.
+1. Sur la page d’accueil, sélectionnez **+Créer un projet**.
+1. Dans l’assistant **Créer un projet**, saisissez un nom valide et, si un hub existant est suggéré, choisissez l’option permettant d’en créer un. Passez ensuite en revue les ressources Azure qui seront créées automatiquement pour prendre en charge votre hub et votre projet.
+1. Sélectionnez **Personnaliser** et spécifiez les paramètres suivants pour votre hub :
+    - **Nom du hub** : *un nom valide pour votre hub*
+    - **Abonnement** : *votre abonnement Azure*
+    - **Groupe de ressources** : *créez ou sélectionnez un groupe de ressources*
+    - **Emplacement** : sélectionnez **Aidez-moi à choisir**, puis sélectionnez **gpt-4o** dans la fenêtre de l’assistant de l’emplacement et utilisez la région recommandée\*.
+    - **Connecter Azure AI Services ou Azure OpenAI** : *créer une nouvelle ressource AI Services*
+    - **Connecter la Recherche Azure AI** : ignorer la connexion
 
-        1. Sélectionnez un **abonnement**, un **groupe de ressources**, un **emplacement**, etc.
-        1. Connectez une **nouvelle ressource Azure AI Services** (ignorez la recherche IA).
+    > \* Les ressources Azure OpenAI sont limitées par des quotas de modèles régionaux. Si une limite de quota est atteinte plus tard dans l’exercice, vous devrez peut-être créer une autre ressource dans une autre région.
 
-    1. Passez en revue les informations, puis sélectionnez **Créer**.
+1. Sélectionnez **Suivant** et passez en revue votre configuration. Sélectionnez **Créer** et patientez jusqu’à ce que l’opération se termine.
 
-1. **Attendez la fin du déploiement** (environ 1 ou 2 minutes).
-
-### B. Déployer un modèle
+### Déployer un modèle
 
 Pour générer des données que vous pouvez surveiller, vous devez d’abord déployer un modèle et interagir avec celui-ci. Dans les instructions, vous êtes invité à déployer un modèle GPT-4o, mais **vous pouvez utiliser n’importe quel modèle** à partir de la collection Azure OpenAI Service disponible.
 
 1. Dans le menu de gauche, dans la section **Mes ressources**, sélectionnez la page **Modèles + points de terminaison**.
-1. Déployez un **modèle de base** et choisissez **gpt-4o**.
-1. **Personnalisez les détails du déploiement**.
-1. Définissez la **capacité** sur **5 000 jetons par minute (TPM).**
+1. Dans le menu **+ Déployer un modèle**, sélectionnez **Déployer le modèle de base**.
+1. Sélectionnez le modèle **gpt-4o** dans la liste et déployez-le avec les paramètres suivants en sélectionnant **Personnaliser** dans les détails du déploiement :
+    - **Nom du déploiement** : *nom valide pour votre modèle de déploiement*
+    - **Type de déploiement** : Standard
+    - **Mise à jour automatique de la version** : activée
+    - **Version du modèle** : *sélectionnez la version la plus récente disponible.*
+    - **Ressource IA connectée** : *sélectionnez votre connexion de ressources Azure OpenAI*
+    - **Limite de débit en jetons par minute (en milliers)** : 1 000
+    - **Filtre de contenu** : DefaultV2
+    - **Enable dynamic quota** : désactivé
 
-Le hub et le projet sont prêts, avec toutes les ressources Azure requises provisionnées automatiquement.
+    > **Remarque** : La réduction du nombre de jetons par minute permet d’éviter une surutilisation du quota disponible dans l’abonnement que vous utilisez. 1 000 TPM devraient suffire pour les données utilisées dans cet exercice. Si votre quota disponible est inférieur à cette valeur, vous pourrez tout de même terminer l’exercice, mais vous pourriez rencontrer des erreurs en cas de dépassement de la limite.
 
-### C. Se connecter à Application Insights
+1. Attendez la fin du déploiement.
 
-Connectez Application Insights à votre projet dans Azure AI Foundry pour commencer à collecter des données pour la surveillance.
+### Se connecter à Application Insights
 
-1. Ouvrez votre projet dans le portail Azure AI Foundry.
+Connectez Application Insights à votre projet dans Azure AI Foundry pour commencer à collecter des données pour la surveillance.
+
 1. Utilisez le menu de gauche, puis sélectionnez la page **Suivi**.
-1. **Créez une** ressource Application Insights pour vous connecter à votre application.
-1. Entrez le **nom d’une ressource Application Insights**.
+1. **Créez** une ressource Application Insights pour vous connecter à votre application.
+1. Entrez un nom de ressource Application Insights, puis sélectionnez **Créer**.
 
 Application Insights est désormais connecté à votre projet et les données commencent à être collectées pour l’analyse.
 
-## 2. Interagissez avec un modèle déployé.
+## Interagir avec un modèle déployé
 
 Vous allez interagir avec votre modèle déployé par programmation en configurant une connexion à votre projet Azure AI Foundry à l’aide d’Azure Cloud Shell. Cela vous permet d’envoyer une invite au modèle et de générer des données de surveillance.
 
-### R : Se connecter à un modèle via Cloud Shell
+### Se connecter à un modèle via Cloud Shell
 
-Commencez par récupérer les informations nécessaires pour être authentifié afin d’interagir avec votre modèle. Ensuite, vous accédez à Azure Cloud Shell et mettez à jour la configuration pour envoyer les invites fournies à votre propre modèle déployé.
+Commencez par récupérer les informations nécessaires pour être authentifié afin d’interagir avec votre modèle. Ensuite, accédez à Azure Cloud Shell et mettez à jour la configuration pour envoyer les invites fournies à votre propre modèle déployé.
 
 1. Dans le portail Azure AI Foundry, affichez la page **Vue d’ensemble** de votre projet.
 1. Dans la zone **Détails du projet**, notez la **chaîne de connexion du projet**.
@@ -80,7 +88,7 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 1. Utilisez le bouton **[\>_]** à droite de la barre de recherche, en haut de la page, pour créer un environnement Cloud Shell dans le portail Azure, puis sélectionnez un environnement ***PowerShell*** avec aucun stockage dans votre abonnement.
 1. Dans la barre d’outils Cloud Shell, dans le menu **Paramètres**, sélectionnez **Accéder à la version classique**.
 
-    **<font color="red">Assurez-vous d’avoir basculé vers la version classique du Cloud Shell avant de continuer.</font>**
+    **<font color="red">Assurez-vous d’avoir basculé vers la version classique de Cloud Shell avant de continuer.</font>**
 
 1. Dans le volet Cloud Shell, entrez et exécutez les commandes suivantes :
 
@@ -90,6 +98,8 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
     ```
 
     Cette commande clone le référentiel GitHub contenant les fichiers de code pour cet exercice.
+
+    > **Conseil** : lorsque vous collez des commandes dans Cloud Shell, la sortie peut prendre une grande quantité de mémoire tampon d’écran. Vous pouvez effacer le contenu de l’écran en saisissant la commande `cls` pour faciliter le focus sur chaque tâche.
 
 1. Une fois le référentiel cloné, accédez au dossier contenant les fichiers de code de l’application :  
 
@@ -116,11 +126,11 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
 1. Dans le fichier de code :
 
     1. Remplacez l’espace réservé **your_project_connection_string** par la chaîne de connexion de votre projet (copiée à partir de la page **Vue d’ensemble** du projet dans le portail Azure AI Foundry).
-    1. Remplacez l’espace réservé **your_model_deployment** par le nom que vous avez attribué à votre modèle de déploiement gpt-4o (par défaut `gpt-4o`).
+    1. Remplacez l’espace réservé **your_model_deployment** par le nom que vous avez attribué à votre modèle de déploiement GPT-4o (par défaut `gpt-4o`).
 
-1. *Une fois* que vous avez remplacé les espaces réservés, dans l’éditeur de code, utilisez la commande **Ctrl+S** ou **Clic droit > Enregistrer** pour **enregistrer vos modifications**.
+1. *Une* fois que vous avez remplacé les espaces réservés, dans l’éditeur de code, utilisez la commande **CTRL+S** ou **Faites un clic droit sur > Enregistrer** pour **enregistrer vos modifications**, puis utilisez la commande **CTRL+Q** ou **Faites un clic droit > Quitter** pour fermer l’éditeur de code tout en gardant la ligne de commande Cloud Shell ouverte.
 
-### B. Envoyer des invites à votre modèle déployé
+### Envoyer des invites à votre modèle déployé
 
 Vous allez maintenant exécuter plusieurs scripts qui envoient différentes invites à votre modèle déployé. Ces interactions génèrent des données que vous pouvez observer ultérieurement dans Azure Monitor.
 
@@ -138,7 +148,7 @@ Vous allez maintenant exécuter plusieurs scripts qui envoient différentes invi
 
     Le modèle génèrera une réponse, qui sera capturée avec Application Insights pour une analyse plus approfondie. Nous allons varier nos invites pour explorer leurs effets.
 
-1. **Ouvrez et passez en revue le script**, où l’invite demande au modèle de **répondre uniquement avec une seule phrase et une liste** :
+1. **Ouvrez et passez en revue le script**, où l’invite demande au modèle de **ne répondre uniquement avec une seule phrase et une liste** :
 
     ```
    code short-prompt.py
@@ -178,50 +188,50 @@ Maintenant que vous avez interagi avec le modèle, vous pouvez passer en revue l
 
 > **Note** : l’affichage des données de surveillance dans Azure Monitor peut prendre quelques minutes.
 
-## 4. Affichez les données de surveillance dans Azure Monitor
+## Afficher les données de surveillance dans Azure Monitor
 
-Pour afficher les données collectées à partir de vos interactions de modèle, vous accédez au tableau de bord qui lie à un classeur dans Azure Monitor.
+Pour afficher les données collectées à partir de vos interactions de modèle, accédez au tableau de bord lié à un classeur dans Azure Monitor.
 
-### R : Dans le portail Azure AI Foundry, accédez à Azure Monitor.
+### Dans le portail Azure AI Foundry, accédez à Azure Monitor.
 
 1. Accédez à l’onglet de votre navigateur avec le **portail Azure AI Foundry** ouvert.
-1. Utilisez le menu de gauche, sélectionnez **Suivi**.
-1. Sélectionnez un lien en haut, qui indique **Consulter votre tableau de bord Insights pour les applications d’IA générative.** Le lien ouvre Azure Monitor dans un nouvel onglet.
-1. Passez en revue la **vue d’ensemble** fournissant des données résumées des interactions avec votre modèle déployé.
+1. Dans le menu de gauche, sélectionnez **Suivi**.
+1. Sélectionnez le lien en haut qui indique **Consulter votre tableau de bord Insights pour les applications d’IA générative**. Le lien ouvre Azure Monitor dans un nouvel onglet.
+1. Passez en revue la **vue d’ensemble** qui fournit des données résumées des interactions avec votre modèle déployé.
 
-## 5. Interprétez les mesures de surveillance dans Azure Monitor
+## Interpréter les mesures de surveillance dans Azure Monitor
 
-Maintenant, il est temps d’explorer les données et de commencer à interpréter ce qu’elles vous disent.
+Maintenant, il est temps d’explorer les données et de commencer à interpréter les informations qu’elles vous fournissent.
 
-### R : Passer en revue l’utilisation des jetons
+### Passer en revue l’utilisation des jetons
 
 Concentrez-vous d’abord sur la section **Utilisation des jetons** et passez en revue les mesures suivantes :
 
-- **Jetons d’invite** : nombre total de jetons utilisés dans l’entrée (les invites que vous avez envoyées) sur tous les appels de modèle.
+- **Jetons d’invite** : nombre total de jetons utilisés dans l’entrée (les invites que vous avez envoyées) pour tous les appels de modèle.
 
-> Considérez cela comme le *coût de poser* une question au modèle.
+> Considérez cela comme le *coût pour poser une question* au modèle.
 
-- **Jetons d’achèvement** : nombre de jetons retournés comme sortie par le modèle, essentiellement la longueur des réponses.
+- **Jetons d’achèvement** : nombre de jetons retournés en sortie par le modèle, essentiellement la longueur des réponses.
 
 > Les jetons d’achèvement générés représentent souvent la majeure partie de l’utilisation et du coût des jetons, en particulier pour les réponses longues ou détaillées.
 
-- **Nombre total de jetons** : total combiné des jetons d’invite totaux et des jetons d’achèvement.
+- **Nombre total de jetons** : total combiné des jetons d’invite et des jetons d’achèvement.
 
-> Mesure la plus importante pour la facturation et les performances, car elle influence la latence et le coût.
+> C’est la mesure la plus importante pour la facturation et les performances, car elle détermine la latence et le coût.
 
 - **Nombre total d’appels** : nombre de demandes d’inférence distinctes, qui est le nombre de fois où le modèle a été appelé.
 
 > Utile pour analyser le débit et comprendre le coût moyen par appel.
 
-### B. Comparer les invites individuelles
+### Comparer les invites individuelles
 
 Faites défiler vers le bas pour rechercher les **étendues d’IA générative**, qui sont visualisées sous la forme d’une table où chaque invite est représentée sous la forme d’une nouvelle ligne de données. Passez en revue et comparez le contenu des colonnes suivantes :
 
 - **Statut** : indique si un appel de modèle a réussi ou échoué.
 
-> Utilisez-le pour identifier les invites problématiques ou les erreurs de configuration. La dernière invite a probablement échoué, car l’invite était trop longue.
+> Utilisez cette colonne pour identifier les invites problématiques ou les erreurs de configuration. La dernière invite a probablement échoué car l’invite était trop longue.
 
-- **Durée** : indique la durée de réponse du modèle, en millisecondes.
+- **Durée** : indique le délai de réponse du modèle, en millisecondes.
 
 > Comparez les lignes pour explorer les modèles d’invite qui entraînent des temps de traitement plus longs.
 
@@ -233,20 +243,20 @@ Faites défiler vers le bas pour rechercher les **étendues d’IA générative*
 
 > Comparez les entrées pour évaluer l’impact de l’utilisation ou de la modification des messages système.
 
-- **Sortie** : contient la réponse du modèle.
+- **Sortie** : contient la réponse du modèle.
 
-> Utilisez-la pour évaluer la verbosité, la pertinence et la cohérence. En particulier en ce qui concerne les nombres de jetons et la durée.
+> Utilisez cette colonne pour évaluer l’éloquence, la pertinence et la cohérence. En particulier en ce qui concerne les nombres de jetons et la durée.
 
-## 6. (FACULTATIF) Créez une alerte
+## (FACULTATIF) Créer une alerte
 
 Si vous avez encore du temps, essayez de configurer une alerte pour vous avertir lorsque la latence du modèle dépasse un certain seuil. Il s’agit d’un exercice conçu pour vous mettre au défi, ce qui signifie que les instructions sont intentionnellement moins détaillées.
 
-- Dans Azure Monitor, créez une **règle d’alerte **pour votre projet et modèle Azure AI Foundry.
+- Dans Azure Monitor, créez une **règle d’alerte** pour votre projet et modèle Azure AI Foundry.
 - Choisissez une mesure telle que **Durée de la requête (ms)** et définissez un seuil (par exemple, supérieur à 4 000 ms).
-- Créez un **groupe d’actions **pour définir la façon dont vous serez averti.
+- Créez un **groupe d’actions** pour définir la façon dont vous serez averti.
 
 Les alertes vous aident à préparer la production en établissant une surveillance proactive. Les alertes que vous configurez dépendent des priorités de votre projet et de la façon dont votre équipe a décidé de mesurer et d’atténuer les risques.
 
 ## Où trouver d’autres labos
 
-Vous pouvez explorer d’autres labos et exercices dans le [portail Learning d’Azure AI Foundry](https://ai.azure.com) ou consulter la **section de labo** du cours pour obtenir d’autres activités disponibles.
+Vous pouvez explorer d’autres labos et exercices dans le [portail d’apprentissage d’Azure AI Foundry](https://ai.azure.com) ou consulter la **section de labo** du cours pour obtenir d’autres activités.
