@@ -26,9 +26,9 @@ Pour effectuer les tâches de cet exercice, vous avez besoin des éléments suiv
 
 ### Créer un projet et un hub Azure AI
 
-> **Note** : si vous disposez déjà d’un hub et d’un projet Azure AI, vous pouvez ignorer cette procédure et utiliser votre projet existant.
+> **Remarque** : Si vous avez déjà un projet Azure AI, vous pouvez ignorer cette procédure et utiliser votre projet existant.
 
-Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azure AI Foundry, ainsi que déployer le modèle utilisé dans l’exercice. Toutefois, vous pouvez également automatiser ce processus via l’utilisation d’une application modèle avec [Azure Developer CLI (azd).](https://aka.ms/azd)
+Vous pouvez créer un projet Azure AI manuellement via le portail Azure AI Foundry, ainsi que déployer le modèle utilisé dans l’exercice. Toutefois, vous pouvez également automatiser ce processus via l’utilisation d’une application modèle avec [Azure Developer CLI (azd).](https://aka.ms/azd)
 
 1. Dans un navigateur web, ouvrez le [portail Azure](https://portal.azure.com) à l’adresse `https://portal.azure.com` et connectez-vous en utilisant vos informations d’identification Azure.
 
@@ -43,15 +43,15 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
     git clone https://github.com/MicrosoftLearning/mslearn-genaiops
      ```
 
-1. Une fois le référentiel cloné, entrez les commandes suivantes pour initialiser le modèle de démarrage. 
-   
+1. Une fois le référentiel cloné, entrez les commandes suivantes pour initialiser le modèle de démarrage.
+
      ```powershell
     cd ./mslearn-genaiops/Starter
     azd init
      ```
 
 1. Une fois invité, donnez au nouvel environnement un nom, car il sera utilisé comme base pour donner des noms uniques à toutes les ressources approvisionnées.
-        
+
 1. Ensuite, entrez la commande suivante pour exécuter le modèle de démarrage. Il approvisionne un hub IA avec des ressources dépendantes, un projet IA, des services IA et un point de terminaison en ligne.
 
      ```powershell
@@ -66,7 +66,7 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
    - Suède Centre
    - USA Ouest
    - USA Ouest 3
-    
+
 1. Attendez que le script se termine. Cela prend généralement environ 10 minutes, mais dans certains cas, cela peut prendre plus de temps.
 
     > **Note** : les ressources Azure OpenAI sont limitées au niveau du locataire par des quotas régionaux. Les régions répertoriées ci-dessus incluent le quota par défaut pour les types de modèle utilisés dans cet exercice. Le choix aléatoire d’une région réduit le risque qu’une seule région atteigne sa limite de quota. Si une limite de quota est atteinte, vous devrez peut-être créer un autre groupe de ressources dans une autre région. En savoir plus sur la [disponibilité du modèle par région](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models?tabs=standard%2Cstandard-chat-completions#global-standard-model-availability)
@@ -91,101 +91,128 @@ Vous pouvez créer un hub Azure AI et un projet manuellement via le portail Azu
      ```
 
 1. Copiez ces valeurs, car elles seront utilisées ultérieurement.
-   
-### Configurer votre environnement de développement local
 
-Pour expérimenter et itérer rapidement, vous allez utiliser Prompty dans Visual Studio (VS) Code. Préparons VS Code pour l’idéation locale.
+### Configurer votre environnement virtuel dans Cloud Shell
 
-1. Ouvrez VS Code et **clonez** le référentiel Git suivant : [https://github.com/MicrosoftLearning/mslearn-genaiops.git](https://github.com/MicrosoftLearning/mslearn-genaiops.git).
-1. Stockez le clone sur un lecteur local et ouvrez le dossier après le clonage.
-1. Dans le volet des extensions de VS Code, recherchez et installez l’extension **Prompty**.
-1. Dans l’Explorateur VS Code (volet gauche), cliquez avec le bouton droit sur le dossier **Files/03**.
-1. Sélectionnez **Nouveau Prompty** dans le menu déroulant.
-1. Ouvrez le fichier nouvellement créé nommé **basic.prompty**.
-1. Exécutez le fichier Prompty en sélectionnant le bouton de **lecture** en haut à droite (ou appuyez sur F5).
-1. Lorsque vous êtes invité à vous connecter, sélectionnez **Autoriser**.
-1. Sélectionnez votre compte Azure et connectez-vous.
-1. Revenez sur VS Code. Un volet **Sortie** s’ouvrira avec un message d’erreur. Le message d’erreur doit vous indiquer que le modèle déployé n’est pas spécifié ou est introuvable.
+Pour expérimenter et itérer rapidement, vous utiliserez un ensemble de scripts Python dans Cloud Shell.
 
-Pour corriger l’erreur, vous devez configurer un modèle que Prompty doit utiliser.
+1. Dans le volet de ligne de commande Cloud Shell, entrez la commande suivante pour accéder au dossier contenant des fichiers de code utilisés dans cet exercice :
 
-## Mettre à jour les métadonnées d’invite
+     ```powershell
+    cd ~/mslearn-genaiops/Files/03/
+     ```
 
-Pour exécuter le fichier Prompty, vous devez spécifier le modèle de langage à utiliser pour générer la réponse. Les métadonnées sont définies dans le *frontmatter* du fichier Prompty. Nous allons mettre à jour les métadonnées avec la configuration du modèle et d’autres informations.
+1. Entrez les commandes suivantes pour activer un environnement virtuel et installer les bibliothèques dont vous avez besoin :
 
-1. Ouvrez le volet Terminal de Visual Studio Code.
-1. Copiez le fichier **basic.prompty** (dans le même dossier) et renommez la copie en `chat-1.prompty`.
-1. Ouvrez **chat-1.prompty** et mettez à jour les champs suivants pour modifier certaines informations de base :
-
-    - **Nom :**
-
-        ```yaml
-        name: Python Tutor Prompt
-        ```
-
-    - **Description** :
-
-        ```yaml
-        description: A teaching assistant for students wanting to learn how to write and edit Python code.
-        ```
-
-    - **Modèle déployé** :
-
-        ```yaml
-        azure_deployment: ${env:AZURE_OPENAI_CHAT_DEPLOYMENT}
-        ```
-
-1. Ensuite, ajoutez l’espace réservé suivant pour la clé API sous le paramètre **azure_deployment**.
-
-    - **Clé de point de terminaison** :
-
-        ```yaml
-        api_key: ${env:AZURE_OPENAI_API_KEY}
-        ```
-
-1. Enregistrez le fichier Prompty mis à jour.
-
-Le fichier Prompty possède désormais tous les paramètres nécessaires, mais certains paramètres utilisent des espaces réservés pour obtenir les valeurs requises. Les espaces réservés sont stockés dans le fichier **.env** dans le même dossier.
-
-## Mettre à jour la configuration du modèle
-
-Pour spécifier le modèle utilisé par Prompty, vous devez fournir les informations de votre modèle dans le fichier .env.
-
-1. Ouvrez le fichier **.env** dans le dossier **Files/03**.
-1. Mettez à jour chacun des espaces réservés avec les valeurs que vous avez copiées précédemment à partir de la sortie du déploiement de modèle dans le portail Azure :
-
-    ```yaml
-    - AZURE_OPENAI_CHAT_DEPLOYMENT="gpt-4"
-    - AZURE_OPENAI_ENDPOINT="<Your endpoint target URI>"
-    - AZURE_OPENAI_API_KEY="<Your endpoint key>"
+    ```powershell
+   python -m venv labenv
+   ./labenv/bin/Activate.ps1
+   pip install python-dotenv openai tiktoken azure-ai-projects prompty[azure]
     ```
 
-1. Enregistrez le fichier .env.
-1. Réexécutez le fichier **chat-1.prompty**.
+1. Saisissez la commande suivante pour ouvrir le fichier de configuration fourni :
 
-Vous devez maintenant obtenir une réponse générée par l’IA, même si elle n’est pas liée à votre scénario, car elle utilise simplement l’exemple d’entrée. Nous allons mettre à jour le modèle pour en faire un assistant d’enseignement IA.
-
-## Modifier l’exemple de section
-
-L’exemple de section spécifie les entrées à Prompty et fournit les valeurs par défaut à utiliser si aucune entrée n’est fournie.
-
-1. Modifiez les champs des paramètres suivants :
-
-    - **firstName** : choisissez un autre nom.
-    - **context** : supprimez l’intégralité de cette section.
-    - **question** : remplacez le texte fourni par :
-
-    ```yaml
-    What is the difference between 'for' loops and 'while' loops?
+    ```powershell
+   code .env
     ```
 
-    Votre **exemple de section** doit maintenant se présenter comme ceci :
-    
-    ```yaml
-    sample:
-    firstName: Daniel
-    question: What is the difference between 'for' loops and 'while' loops?
+    Le fichier s’ouvre dans un éditeur de code.
+
+1. Dans le fichier de code, remplacez les espaces réservés **ENDPOINTNAME** et **APIKEY** par les valeurs de point de terminaison et de clé que vous avez copiées précédemment.
+1. *Une* fois que vous avez remplacé les espaces réservés, dans l’éditeur de code, utilisez la commande **CTRL+S** ou **Faites un clic droit sur > Enregistrer** pour enregistrer vos modifications, puis utilisez la commande **CTRL+Q** ou **Faites un clic droit > Quitter** pour fermer l’éditeur de code tout en gardant la ligne de commande Cloud Shell ouverte.
+
+## Optimiser l’invite système
+
+La réduction de la longueur des invites système tout en conservant les fonctionnalités de l’IA générée est essentielle pour les déploiements à grande échelle. Des invites plus courtes peuvent accélérer les temps de réponse, car le modèle IA traite moins de jetons et utilise également moins de ressources de calcul.
+
+1. Entrez la commande suivante pour ouvrir le fichier d’application fourni :
+
+    ```powershell
+   code optimize-prompt.py
     ```
 
-    1. Exécutez le fichier Prompty mis à jour et passez en revue la sortie.
+    Passez en revue le code et notez que le script exécute le `start.prompty` fichier de modèle qui a déjà une invite système prédéfinie.
 
+1. Exécutez `code start.prompty` cette commande pour passer en revue l’invite système. Réfléchissez à la façon dont vous pouvez la raccourcir tout en conservant son intention claire et efficace. Par exemple :
+
+   ```python
+   original_prompt = "You are a helpful assistant. Your job is to answer questions and provide information to users in a concise and accurate manner."
+   optimized_prompt = "You are a helpful assistant. Answer questions concisely and accurately."
+   ```
+
+   Supprimez les mots redondants et concentrez-vous sur les instructions essentielles. Enregistrez votre invite optimisée dans le fichier.
+
+### Tester et valider votre optimisation
+
+Il est important de tester les modifications apportées à l’invite pour vous assurer de réduire l’utilisation des jetons sans perdre la qualité.
+
+1. Exécutez `code token-count.py` pour ouvrir et examiner l’application de compteur de jetons fournie dans l’exercice. Si vous avez utilisé une invite optimisée différente de celle fournie dans l’exemple ci-dessus, vous pouvez également l’utiliser dans cette application.
+
+1. Exécutez le script avec `python token-count.py` et observez la différence dans le nombre de jetons. Assurez-vous que l’invite optimisée produit toujours des réponses de haute qualité.
+
+## Analyser les interactions utilisateur
+
+Comprendre comment les utilisateurs interagissent avec votre application permet d’identifier les modèles qui augmentent l’utilisation des jetons.
+
+1. Passez en revue un exemple de jeu de données d’invites utilisateur :
+
+    - **« Résumez le tracé de la guerre et de *la tranquillité* ».**
+    - **« Quels sont les faits amusants sur les chats ? »**
+    - **« Écrivez un plan d’entreprise détaillé pour une start-up qui utilise l’IA pour optimiser les chaînes d’approvisionnement. »**
+    - **« Traduisez « Hello, how are you ? » en français. »**
+    - **« Expliquez l’enchevêtrement quantique à une personne de 10 ans. »**
+    - **« Donnez-moi 10 idées créatives pour une histoire courte de science-fi. »**
+
+    Pour chacune d’elles, déterminez si elle est susceptible d’entraîner une **réponse courte**, **moyenne** ou **longue/complexe** de l’IA.
+
+1. Passez en revue vos catégorisations. Quels modèles remarquez-vous ? Vous devez :
+
+    - **Le niveau d’abstraction** (par exemple, créatif ou non) affecte-t-il la longueur ?
+    - Les **invites ouvertes** ont-ils tendance à être plus longues ?
+    - Comment la **complexité des instructions** (par exemple, « expliquer comme si j’avais 10 ans » influence-t-elle la réponse ?
+
+1. Entrez la commande suivante pour exécuter l’application à **invite d’optimisation ** :
+
+    ```
+   python optimize-prompt.py
+    ```
+
+1. Utilisez certains des exemples fournis ci-dessus pour vérifier votre analyse.
+1. Utilisez maintenant l’invite de formulaire long suivante et passez en revue sa sortie :
+
+    ```
+   Write a comprehensive overview of the history of artificial intelligence, including key milestones, major contributors, and the evolution of machine learning techniques from the 1950s to today.
+    ```
+
+1. Réécrivez cette invite pour :
+
+    - Limiter l’étendue
+    - Définir les attentes en termes de concision
+    - Utiliser la mise en forme ou la structure pour guider la réponse
+
+1. Comparez les réponses pour vérifier que vous avez obtenu une réponse plus concise.
+
+> **REMARQUE** : Vous pouvez utiliser `token-count.py` pour comparer l’utilisation des jetons dans les deux réponses.
+<br>
+<details>
+<summary><b>Exemple d’invite réécrite :</b></summary><br>
+<p>« Donnez un résumé de 5 jalons clés dans l’historique de l’IA. »</p>
+</details>
+
+## [**FACULTATIF**] Appliquer vos optimisations dans un scénario réel
+
+1. Imaginez que vous créez un chatbot de support client qui doit fournir des réponses rapides et précises.
+1. Intégrez votre invite système optimisée et votre modèle dans le code du chatbot (*vous pouvez l’utiliser `optimize-prompt.py` comme point de départ*).
+1. Testez le chatbot avec différentes requêtes utilisateur pour vous assurer qu’il répond efficacement et efficacement.
+
+## Conclusion
+
+L’optimisation des invites est une compétence clé pour réduire les coûts et améliorer les performances des applications d’intelligence artificielle générées. En raccourcissant les invites, en utilisant des modèles et en analysant les interactions utilisateur, vous pouvez créer des solutions plus efficaces et scalables.
+
+## Nettoyage
+
+Si vous avez terminé d’explorer Azure AI Services, vous devez supprimer les ressources que vous avez créées dans cet exercice pour éviter d’entraîner des coûts Azure inutiles.
+
+1. Revenez à l’onglet du navigateur contenant le portail Azure (ou ouvrez à nouveau le [portail Azure](https://portal.azure.com?azure-portal=true) dans un nouvel onglet de navigateur) et affichez le contenu du groupe de ressources où vous avez déployé les ressources utilisées dans cet exercice.
+1. Dans la barre d’outils, sélectionnez **Supprimer le groupe de ressources**.
+1. Entrez le nom du groupe de ressources et confirmez que vous souhaitez le supprimer.

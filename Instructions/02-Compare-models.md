@@ -107,9 +107,9 @@ La précision des métriques de benchmark est calculée en fonction des jeux de 
 
 Pour expérimenter et itérer rapidement, vous utiliserez un ensemble de scripts Python dans Cloud Shell.
 
-1. Dans le portail Azure AI Foundry, affichez la page **Vue d’ensemble** de votre projet.
-1. Dans la zone **Détails du projet**, notez la **chaîne de connexion du projet**.
-1. Enregistrez la chaîne dans un bloc-notes. Vous utiliserez cette chaîne de connexion pour vous connecter à votre projet dans une application cliente.
+1. Dans l’onglet Portail Azure, accédez au groupe de ressources créé précédemment par le script de déploiement et sélectionnez votre ressource **Azure AI Foundry** .
+1. Dans la page **Vue d’ensemble ** de votre ressource, sélectionnez **Cliquer ici pour afficher les points de terminaison** et copier le point de terminaison de l’API AI Foundry.
+1. Enregistrez le point de terminaison dans un bloc-notes. Vous l’utiliserez pour vous connecter à votre projet dans une application cliente.
 1. Dans l’onglet Portail Azure, ouvrez Cloud Shell si vous l’avez fermé avant et exécutez la commande suivante pour accéder au dossier avec les fichiers de code utilisés dans cet exercice :
 
      ```powershell
@@ -132,7 +132,7 @@ Pour expérimenter et itérer rapidement, vous utiliserez un ensemble de scripts
 
     Le fichier s’ouvre dans un éditeur de code.
 
-1. Dans le fichier de code, remplacez l’espace réservé **your_project_connection_string** par la chaîne de connexion de votre projet (copiée à partir de la page **Vue d’ensemble** du projet dans le portail Azure AI Foundry). Notez que le premier et deuxième modèle utilisés dans l’exercice sont respectivement **gpt-4o** et **gpt-4o-mini**.
+1. Dans le fichier de code, remplacez l’espace réservé **your_project_endpoint** par le point de terminaison de votre projet que vous avez copié précédemment. Notez que le premier et deuxième modèle utilisés dans l’exercice sont respectivement **gpt-4o** et **gpt-4o-mini**.
 1. *Une* fois que vous avez remplacé l’espace réservé, dans l’éditeur de code, utilisez la commande **CTRL+S**ou**Faites un clic droit sur > Enregistrer** pour enregistrer vos modifications, puis utilisez la commande **CTRL+Q** ou **Faites un clic droit > Quitter** pour fermer l’éditeur de code tout en gardant la ligne de commande Cloud Shell ouverte.
 
 ## Envoyer des invites à vos modèles déployés
@@ -147,7 +147,18 @@ Vous allez maintenant exécuter plusieurs scripts qui envoient différentes invi
 
 Le script encodera l’image utilisée dans cet exercice dans une URL de données. Cette URL sera utilisée pour incorporer l’image directement dans la requête de saisie semi-automatique de conversation avec la première invite de texte. Le script affichera ensuite la réponse du modèle, l’ajoutera à l’historique des conversations, puis enverra une deuxième invite. La deuxième invite est envoyée et stockée dans le but de rendre les mesures observées ultérieurement plus loin. Néanmoins, vous pouvez supprimer les marques de commentaire de la section facultative du code pour obtenir également la deuxième réponse en sortie.
 
-1. Dans le volet de ligne de commande Cloud Shell sous l’éditeur de code, entrez la commande suivante pour exécuter le **premier** script :
+1. Dans le volet de la ligne de commande Cloud Shell, entrez la commande suivante pour vous connecter à Azure.
+
+    ```
+   az login
+    ```
+
+    **<font color="red">Vous devez vous connecter à Azure, même si la session Cloud Shell est déjà authentifiée.</font>**
+
+    > **Remarque** :dans la plupart des scénarios, l’utilisation d’*az login* suffit. Toutefois, si vous avez des abonnements dans plusieurs locataires, vous devrez peut-être spécifier le locataire à l’aide du paramètre *--tenant*. Pour plus d’informations, consultez [Se connecter à Azure de manière interactive à l’aide d’Azure CLI](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively).
+    
+1. Lorsque l’invite apparaît, suivez les instructions pour ouvrir la page de connexion dans un nouvel onglet et entrez le code d’authentification fourni ainsi que vos informations d’identification Azure. Effectuez ensuite le processus de connexion dans la ligne de commande, en sélectionnant l’abonnement contenant votre hub Azure AI Foundry si nécessaire.
+1. Une fois la connexion effectuée, entrez la commande suivante pour exécuter l’application :
 
     ```powershell
    python model1.py
@@ -169,7 +180,7 @@ Le script encodera l’image utilisée dans cet exercice dans une URL de donnée
 
 Enfin, vous allez exécuter un troisième script qui tracera le nombre de jetons traités au fil du temps pour chaque modèle. Ces données sont obtenues à partir d’Azure Monitor.
 
-1. Avant d’exécuter le dernier script, vous devez copier l’ID de la ressource de votre Azure AI Services à partir du portail Azure. Accédez à la page de présentation de votre ressource Azure AI Services, puis sélectionnez **Affichage JSON**. Copiez l’ID de la ressource et remplacez l’espace réservé `your_resource_id` dans le fichier de code :
+1. Avant d’exécuter le dernier script, vous devez copier l’ID de ressource de votre ressource Azure AI Foundry à partir du portail Azure. Accédez à la page vue d’ensemble de votre ressource Azure AI Foundry et sélectionnez **Affichage JSON**. Copiez l’ID de la ressource et remplacez l’espace réservé `your_resource_id` dans le fichier de code :
 
     ```powershell
    code plot.py
