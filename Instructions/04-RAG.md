@@ -124,16 +124,59 @@ Pour expérimenter et itérer rapidement, vous utiliserez un ensemble de scripts
 
 Vous allez maintenant exécuter un script qui ingère et prétraite les données, crée des intégrations, et génère un magasin de vecteurs et un index, vous permettant ainsi de mettre en œuvre un système RAG de manière efficace.
 
-1. Exécutez la commande suivante pour **afficher le script** fourni :
+1. Exécutez la commande suivante pour **modifier le script** fourni :
 
     ```powershell
    code RAG.py
     ```
 
-1. Vérifiez le script et notez qu’il utilise bien un fichier .csv contenant les avis sur les hôtels comme données d’ancrage. Vous pouvez consulter le contenu de ce fichier en exécutant la commande `download app_hotel_reviews.csv` et en ouvrant le fichier.
+1. Dans le script, recherchez **# Initialiser les composants qui seront utilisés à partir de la suite d’intégrations de LangChain**. Sous ce commentaire, collez le code suivant :
+
+    ```python
+   # Initialize the components that will be used from LangChain's suite of integrations
+   llm = AzureChatOpenAI(azure_deployment=llm_name)
+   embeddings = AzureOpenAIEmbeddings(azure_deployment=embeddings_name)
+   vector_store = InMemoryVectorStore(embeddings)
+    ```
+
+1. Vérifiez le script et notez qu’il utilise bien un fichier .csv contenant les avis sur les hôtels comme données d’ancrage. Vous pouvez voir le contenu de ce fichier en exécutant la commande `download app_hotel_reviews.csv` dans le volet de ligne de commande et en ouvrant le fichier.
+1. Ensuite, recherchez **# Fractionner les documents en blocs pour l’incorporation et le stockage vectoriel**. Sous ce commentaire, collez le code suivant :
+
+    ```python
+   # Split the documents into chunks for embedding and vector storage
+   text_splitter = RecursiveCharacterTextSplitter(
+       chunk_size=200,
+       chunk_overlap=20,
+       add_start_index=True,
+   )
+   all_splits = text_splitter.split_documents(docs)
+    
+   print(f"Split documents into {len(all_splits)} sub-documents.")
+    ```
+
+    Le code ci-dessus fractionne un ensemble de documents volumineux en blocs plus petits. C’est important, car de nombreux modèles d’incorporation (comme ceux utilisés pour la recherche sémantique ou les bases de données vectorielles) ont une limite de jetons et fonctionnent mieux sur les textes plus courts.
+
+1. Ensuite, recherchez **# Incorporer le contenu de chaque bloc de texte et insérer ces incorporations dans un magasin vectoriel**. Sous ce commentaire, collez le code suivant :
+
+    ```python
+   # Embed the contents of each text chunk and insert these embeddings into a vector store
+   document_ids = vector_store.add_documents(documents=all_splits)
+    ```
+
+1. Ensuite, recherchez **# Récupérer les documents pertinents à partir du magasin vectoriel en fonction de l’entrée utilisateur**. Sous ce commentaire, collez le code suivant, en respectant l’alinéa approprié :
+
+    ```python
+   # Retrieve relevant documents from the vector store based on user input
+   retrieved_docs = vector_store.similarity_search(question, k=10)
+   docs_content = "\n\n".join(doc.page_content for doc in retrieved_docs)
+    ```
+
+    Le code ci-dessus recherche dans le magasin vectoriel les documents les plus similaires à la question d’entrée de l’utilisateur. La question est convertie en vecteur à l’aide du même modèle d’incorporation que celui utilisé pour les documents. Le système compare ensuite ce vecteur à tous les vecteurs stockés et récupère les vecteurs les plus similaires.
+
+1. Enregistrez les changements apportés.
 1. Dans la ligne de commande, **exécutez le script** en entrant la commande suivante :
 
-    ```
+    ```powershell
    python RAG.py
     ```
 
