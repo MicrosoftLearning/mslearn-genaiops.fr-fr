@@ -90,7 +90,7 @@ Commencez par récupérer les informations nécessaires pour être authentifié 
     ```
    python -m venv labenv
    ./labenv/bin/Activate.ps1
-   pip install python-dotenv openai azure-identity azure-ai-projects azure-ai-inference azure-monitor-opentelemetry
+   pip install python-dotenv openai azure-identity azure-ai-projects opentelemetry-instrumentation-openai-v2 azure-monitor-opentelemetry
     ```
 
 1. Saisissez la commande suivante pour ouvrir le fichier de configuration fourni :
@@ -184,11 +184,12 @@ Pour afficher les données collectées à partir de vos interactions de modèle,
 ### Dans le portail Azure AI Foundry, accédez à Azure Monitor.
 
 1. Accédez à l’onglet de votre navigateur avec le **portail Azure AI Foundry** ouvert.
-1. Dans le menu de gauche, sélectionnez **Suivi**.
-1. Sélectionnez le lien en haut qui indique **Consulter votre tableau de bord Insights pour les applications d’IA générative**. Le lien ouvre Azure Monitor dans un nouvel onglet.
-1. Passez en revue la **vue d’ensemble** qui fournit des données résumées des interactions avec votre modèle déployé.
+1. Utilisez le menu sur la gauche, sélectionnez **Surveillance**.
+1. Sélectionnez l’**utilisation des ressources** et passez en revue les données résumées des interactions avec votre modèle déployé.
 
-## Interpréter les mesures de surveillance dans Azure Monitor
+> **Remarque** : Vous pouvez également sélectionner **Azure Monitor Metrics Explorer** en bas de la page Surveillance pour obtenir une vue complète de toutes les métriques disponibles. Le lien ouvre Azure Monitor dans un nouvel onglet.
+
+## Interpréter les métriques de surveillance
 
 Maintenant, il est temps d’explorer les données et de commencer à interpréter les informations qu’elles vous fournissent.
 
@@ -196,45 +197,41 @@ Maintenant, il est temps d’explorer les données et de commencer à interprét
 
 Concentrez-vous d’abord sur la section **Utilisation des jetons** et passez en revue les mesures suivantes :
 
-- **Jetons d’invite** : nombre total de jetons utilisés dans l’entrée (les invites que vous avez envoyées) pour tous les appels de modèle.
+- **Nombre total de requêtes** : nombre de demandes d’inférence distinctes, qui est le nombre de fois où le modèle a été appelé.
 
-> Considérez cela comme le *coût pour poser une question* au modèle.
-
-- **Jetons d’achèvement** : nombre de jetons retournés en sortie par le modèle, essentiellement la longueur des réponses.
-
-> Les jetons d’achèvement générés représentent souvent la majeure partie de l’utilisation et du coût des jetons, en particulier pour les réponses longues ou détaillées.
+> Utile pour analyser le débit et comprendre le coût moyen par appel.
 
 - **Nombre total de jetons** : total combiné des jetons d’invite et des jetons d’achèvement.
 
 > C’est la mesure la plus importante pour la facturation et les performances, car elle détermine la latence et le coût.
 
-- **Nombre total d’appels** : nombre de demandes d’inférence distinctes, qui est le nombre de fois où le modèle a été appelé.
+- **Nombre de jetons d’invite** : nombre total de jetons utilisés dans l’entrée (les invites que vous avez envoyées) pour tous les appels de modèle.
 
-> Utile pour analyser le débit et comprendre le coût moyen par appel.
+> Considérez cela comme le *coût pour poser une question* au modèle.
+
+- **Nombre de jetons d’achèvement** : nombre de jetons retournés en sortie par le modèle, essentiellement la longueur des réponses.
+
+> Les jetons d’achèvement générés représentent souvent la majeure partie de l’utilisation et du coût des jetons, en particulier pour les réponses longues ou détaillées.
 
 ### Comparer les invites individuelles
 
-Faites défiler vers le bas pour rechercher les **étendues d’IA générative**, qui sont visualisées sous la forme d’une table où chaque invite est représentée sous la forme d’une nouvelle ligne de données. Passez en revue et comparez le contenu des colonnes suivantes :
-
-- **Statut** : indique si un appel de modèle a réussi ou échoué.
-
-> Utilisez cette colonne pour identifier les invites problématiques ou les erreurs de configuration. La dernière invite a probablement échoué car l’invite était trop longue.
-
-- **Durée** : indique le délai de réponse du modèle, en millisecondes.
-
-> Comparez les lignes pour explorer les modèles d’invite qui entraînent des temps de traitement plus longs.
+1. Dans le menu de gauche, sélectionnez **Suivi**. Développez chaque étendue d’IA de génération **generate_completion** pour voir leurs étendues enfants. Chaque invite est représentée sous la forme d’une nouvelle ligne de données. Passez en revue et comparez le contenu des colonnes suivantes :
 
 - **Entrée** : affiche le message utilisateur envoyé au modèle.
 
 > Utilisez cette colonne pour évaluer quelles formulations d’invite sont efficaces ou problématiques.
 
-- **Système** : affiche le message système utilisé dans l’invite (le cas échéant).
-
-> Comparez les entrées pour évaluer l’impact de l’utilisation ou de la modification des messages système.
-
 - **Sortie** : contient la réponse du modèle.
 
 > Utilisez cette colonne pour évaluer l’éloquence, la pertinence et la cohérence. En particulier en ce qui concerne les nombres de jetons et la durée.
+
+- **Durée** : indique le délai de réponse du modèle, en millisecondes.
+
+> Comparez les lignes pour explorer les modèles d’invite qui entraînent des temps de traitement plus longs.
+
+- **Réussite** : indique si un appel de modèle a réussi ou échoué.
+
+> Utilisez cette colonne pour identifier les invites problématiques ou les erreurs de configuration. La dernière invite a probablement échoué car l’invite était trop longue.
 
 ## (FACULTATIF) Créer une alerte
 
